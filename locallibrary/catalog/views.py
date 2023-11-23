@@ -1,13 +1,18 @@
-from .forms import RegistrationForm, DesignRequestForm
+from .forms import RegistrationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
-from .forms import CategoryForm
-from .models import Category
-from django.shortcuts import redirect
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate, login
+from .forms import CategoryForm
+from django.shortcuts import redirect
 from django.contrib import messages
+from .models import Category, Images
 
+
+def index(request):
+    num_img = Images.objects.all().count()
+
+    return render(request, 'index.html', context={'num_img': num_img})
 
 @login_required
 def home(request):
@@ -40,9 +45,6 @@ def register(request):
         form = RegistrationForm()
 
     return render(request, 'registration/register.html', {'form': form})
-
-
-from django.shortcuts import redirect
 
 
 def user_logout(request):
@@ -80,7 +82,7 @@ def create_design_request(request):
             design_request = form.save(commit=False)
             design_request.user = request.user
             design_request.save()
-            return redirect('home')  # Измените на ваше имя для главной страницы
+            return redirect('design_requests')
     else:
         form = DesignRequestForm()
 
@@ -88,8 +90,6 @@ def create_design_request(request):
 
 
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-from .models import DesignRequest
 
 
 @login_required
@@ -107,40 +107,66 @@ def view_own_requests(request):
 
 @login_required
 def delete_design_request(request, request_id):
-    design_request = get_object_or_404(DesignRequest, id=request_id)
+    design_request = get_object_or_404(DesignRequest, id=request_id, user=request.user)
 
-    if design_request.user == request.user:
+    if design_request.status == 'New':
         design_request.delete()
 
-    return redirect('view_own_requests')
+    return redirect('user_profile')
 
 
 from django.contrib.admin.views.decorators import staff_member_required
-from django.shortcuts import get_object_or_404
+
+@login_required
+def user_profile(request):
+    user_requests = DesignRequest.objects.filter(user=request.user)
+
+    return render(request, 'catalog/user_profile.html', {'user_requests': user_requests})
 
 
-@staff_member_required
-def change_status(request, request_id, new_status):
-    design_request = get_object_or_404(DesignRequest, id=request_id)
-    design_request.status = new_status
-    design_request.save()
-    return redirect('admin_home')
+from django.contrib.auth.decorators import login_required
 
 
-@staff_member_required
-def manage_categories(request):
-    categories = Category.objects.all()
-    return render(request, 'catalog/manage_categories.html', {'categories': categories})
+@login_required
+def user_profile(request):
+    user_requests = DesignRequest.objects.filter(user=request.user).order_by('-timestamp')
+    context = {'user_requests': user_requests}
+    return render(request, 'catalog/user_profile.html', context)
 
 
-@staff_member_required
-def add_category(request):
+from django.shortcuts import render, get_object_or_404
+from .models import DesignRequest
+
+
+@login_required
+def edit_design_request(request, request_id):
+    design_request = get_object_or_404(DesignRequest, id=request_id, user=request.user)
+
     if request.method == 'POST':
-        form = CategoryForm(request.POST)
+        form = DesignRequestForm(request.POST, request.FILES, instance=design_request)
         if form.is_valid():
             form.save()
-            return redirect('manage_categories')
+            return redirect('user_profile')
     else:
-        form = CategoryForm()
+        form = DesignRequestForm(instance=design_request)
 
-    return render(request, 'catalog/add_category.html', {'form': form})
+    return render(request, 'catalog/edit_design_request.html', {'form': form, 'design_request': design_request})
+
+
+from django.shortcuts import render
+from .forms import DesignRequestForm
+
+
+@login_required
+def create_design_request(request):
+    if request.method == 'POST':
+        form = DesignRequestForm(request.POST, request.FILES)
+        if form.is_valid():
+            design_request = form.save(commit=False)
+            design_request.user = request.user
+            design_request.save()
+            return redirect('home')
+    else:
+        form = DesignRequestForm()
+
+    return render(request, 'catalog/create_design_request.html', {'form': form})
