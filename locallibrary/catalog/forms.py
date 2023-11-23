@@ -69,3 +69,11 @@ class ApplicationCheckForm(forms.ModelForm):
         image_admin = self.cleaned_data.get('image_admin')
         comment_admin = self.cleaned_data.get('comment_admin')
 
+        if self.instance.status != 'New':
+            raise ValidationError("Статус можно менять только у новых заявок!")
+
+        if status == 'Completed' and not image_admin:
+            raise ValidationError("Заявке со статусом 'Выполнено' надо прикреплять фотографию дизайна!")
+
+        if status == 'In Progress' and not comment_admin:
+            raise ValidationError("Заявке со статусом 'Принята в работу' надо оставлять комментарий!")

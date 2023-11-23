@@ -13,3 +13,7 @@ admin.site.register(Category)
 from django.contrib import admin
 
 
+@admin.register(DesignRequest)
+class AdminApplication(admin.ModelAdmin):
+    form = ApplicationCheckForm
+    list_display = ["title", "category"]
