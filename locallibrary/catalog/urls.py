@@ -17,4 +17,7 @@ urlpatterns = [
     path('logout/', user_logout, name='logout'),
     path('home/', home, name='home'),
     path('logout/', LogoutView.as_view(), name='logout'),
+    path('create_design_request/', create_design_request, name='create_design_request'),
+    path('view_own_requests/', view_own_requests, name='view_own_requests'),
+    path('view_own_requests/', view_own_requests, name='view_own_requests'),
 ]
