@@ -117,6 +117,66 @@ def delete_design_request(request, request_id):
 
 from django.contrib.admin.views.decorators import staff_member_required
 
+
+@staff_member_required
+def change_status(request, request_id, new_status):
+    design_request = get_object_or_404(DesignRequest, id=request_id)
+
+    if design_request.status == 'New' and new_status in ['In Progress', 'Completed']:
+        design_request.status = new_status
+        design_request.save()
+        # Дополнительные действия, например, отправка уведомления
+
+    return redirect('admin_home')
+
+
+from django.shortcuts import redirect
+from django.contrib.auth.decorators import user_passes_test
+from .forms import CategoryForm
+
+
+def is_staff(user):
+    return user.is_staff
+
+
+@user_passes_test(is_staff)
+def manage_categories(request):
+    categories = Category.objects.all()
+    return render(request, 'catalog/manage_categories.html', {'categories': categories})
+
+
+@user_passes_test(is_staff)
+def add_category(request):
+    if request.method == 'POST':
+        form = CategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('manage_categories')
+    else:
+        form = CategoryForm()
+
+    return render(request, 'catalog/add_category.html', {'form': form})
+
+
+# catalog/views.py
+
+
+from django.http import JsonResponse
+from .models import Category
+
+
+@staff_member_required
+def delete_category(request, category_id):
+    category = get_object_or_404(Category, id=category_id)
+
+    if request.method == 'DELETE':
+        category.delete()
+        return JsonResponse({'message': 'Категория успешно удалена'}, status=200)
+    else:
+        return JsonResponse({'error': 'Метод не поддерживается'}, status=400)
+
+
+
 @login_required
 def user_profile(request):
     user_requests = DesignRequest.objects.filter(user=request.user)
