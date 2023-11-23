@@ -8,11 +8,20 @@
 </head>
 <body>
     <header>
-        <h2>Добро пожаловать, {{ user.username }}!</h2>
+
+        <h1>Главная страница</h1><div>  <h2>Добро пожаловать, {{ user.username }}!</h2>
+    <a href="{% url 'user_profile' %}">Мой профиль</a>
+            <!-- Добавление ссылки на просмотр собственных заявок -->
         {% if user.is_authenticated %}
             <!-- Отображение контента для авторизованного пользователя -->
-          <a href="{% url 'logout' %}?next={{ request.path|urlencode }}">Выйти</a>
-        <h1>Главная страница</h1>
+      <a href="{% url 'logout' %}?next={{ request.path|urlencode }}">Выйти</a>
+
+        {% else %}
+            <!-- Отображение контента для неавторизованного пользователя -->
+            <a href="{% url 'login' %}?next={{ request.path|urlencode }}">Войти</a> | <a href="{% url 'register' %}">Зарегистрироваться</a>
+
+        {% endif %}
+</div>
     </header>
     <main>
         <img src="https://i.pinimg.com/564x/e6/27/8a/e6278aa66f2adf25943b8b4acfc4f8d6.jpg"
@@ -25,17 +34,19 @@
                         <strong>Временная метка:</strong> {{ request.timestamp }}<br>
                         <strong>Название:</strong> {{ request.title }}<br>
                         <strong>Категория:</strong> {{ request.category.name }}<br>
+                        <strong>Статус:</strong> {{ request.status }}<br>
 
-                        <!-- Добавление изображения заявки -->
-                        <img src="{{ request.photo.url }}" alt="{{ request.title }}">
+               {% if request.photo %}
+
+            <img src="{{ request.photo.url }}" alt="{{ request.title }}"><br>
+        {% endif %}
+
                     </li>
                 {% endfor %}
             </ul>
         </div>
-          <h3>Количество заявок в статусе "Принято в работу": {{ in_progress_count }}</h3>
 
-        <!-- Ваши заявки -->
-        <div class="user-requests">
+        <!-- Ваши заявки --> <div class="user-requests"><a href="{% url 'view_own_requests' %}">Просмотреть мои заявки</a>
             <h2>Ваши заявки:</h2>
             <ul>
                 {% for request in user_requests %}
@@ -43,16 +54,18 @@
                         <strong>Временная метка:</strong> {{ request.timestamp }}<br>
                         <strong>Название:</strong> {{ request.title }}<br>
                         <strong>Категория:</strong> {{ request.category.name }}<br>
-
-                        <!-- Добавление изображения заявки -->
-                        <img src="{{ request.photo.url }}" alt="{{ request.title }}">
+                        <strong>Статус:</strong> {{ request.status }}<br>
+                        {% if request.photo %}
+            <img src="{{ request.photo.url }}" alt="{{ request.title }}"><br>
+        {% endif %}
                     </li>
                 {% endfor %}
             </ul>
         </div>
-        {% else %}
-            <a href="{% url 'login' %}?next={{ request.path|urlencode }}">Войти</a> | <a href="{% url 'register' %}">Зарегистрироваться</a>
-        {% endif %}
+
+        <h3>Количество заявок в статусе "Принято в работу": {{ in_progress_count }}</h3>
+
+
     </main>
     <footer>
         <!-- Ваш футер -->
