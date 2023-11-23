@@ -1,0 +1,12 @@
+<!-- templates/registration/register.html -->
+
+
+{% block content %}
+  <h2>Регистрация</h2>
+<p>Для регистрации заполните все поля</p>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Зарегистрироваться</button>
+  </form>
+{% endblock %}
