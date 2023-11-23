@@ -1,4 +1,4 @@
-from django.contrib.auth.models import BaseUserManager, User
+from django.contrib.auth.models import BaseUserManager
 from django.contrib.auth.validators import ASCIIUsernameValidator
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator, FileExtensionValidator
@@ -28,6 +28,10 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         return self.create_user(username, email, password, **extra_fields)
+
+
+class Images(models.Model):
+    model_img = models.ImageField(upload_to='static/img')
 
 
 class CustomUser(AbstractUser):
@@ -77,7 +81,7 @@ class CustomUser(AbstractUser):
 class DesignRequest(models.Model):
     title = models.CharField(max_length=100)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    photo = models.ImageField(upload_to='design_request_photos/', blank=True, null=True)
+    photo = models.ImageField(upload_to='images/', blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     description = models.TextField()
     STATUS_CHOICES = [
