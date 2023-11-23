@@ -62,3 +62,10 @@ class CategoryForm(forms.ModelForm):
         fields = ['name']
 
 
+class ApplicationCheckForm(forms.ModelForm):
+
+    def clean(self):
+        status = self.cleaned_data.get('status')
+        image_admin = self.cleaned_data.get('image_admin')
+        comment_admin = self.cleaned_data.get('comment_admin')
+
